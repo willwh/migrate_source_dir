@@ -73,10 +73,10 @@ class Directory extends SourcePluginBase {
         if (!$fileinfo->isDot() && !$fileinfo->isDir()) {
           if (!empty($this->configuration['file_ext'])) {
             if ($fileinfo->getExtension() == $this->configuration['file_ext']) {
-              array_push($this->files_list, $fileinfo->getPathname());
+              array_push($this->files_list, ['path' => $fileinfo->getPathname()]);
             }
           } else {
-            array_push($this->files_list, $fileinfo->getPathname());
+            array_push($this->files_list, ['path' => $fileinfo->getPathname()]);
           }
         }
       }
@@ -92,10 +92,10 @@ class Directory extends SourcePluginBase {
         if (!is_dir($path)) {
           if (!empty($this->configuration['file_ext'])) {
             if ($path->getExtension() == $this->configuration['file_ext']) {
-              array_push($this->files_list, $path);
+              array_push($this->files_list, ['path' => $path]);
             }
           } else {
-            array_push($this->files_list, $path);
+            array_push($this->files_list, ['path' => $path]);
           }
         }
       }
@@ -107,8 +107,12 @@ class Directory extends SourcePluginBase {
    * {@inheritdoc}
    */
   public function getIDs() {
-    $ids = [];
-    return $ids;
+    if (is_array($this->files_list)) {
+      return array_values($this->files_list);
+    }
+    else {
+      throw new MigrateException('Unable to get a list of IDs for the Directory source');
+    }
   }
 
   /**
@@ -119,5 +123,4 @@ class Directory extends SourcePluginBase {
 
     return $fields;
   }
-
 }
