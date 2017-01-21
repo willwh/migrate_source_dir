@@ -1,0 +1,7 @@
+name: Migrate Source Directory
+type: module
+description: 'Directory source migration.'
+package: Migration
+core: 8.x
+dependencies:
+  - drupal:migrate (>= 8.1)

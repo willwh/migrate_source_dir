@@ -1,0 +1,13 @@
+migrate.source.dir:
+  type: migrate_source
+  label: 'DIR'
+  mapping:
+    dir:
+      type: string
+      label: 'A directory path'
+    file_ext:
+      type: string
+      label: 'File type to search for'
+    recurse:
+      type: bool
+      label: 'Recurse through provided directory'
