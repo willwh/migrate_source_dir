@@ -119,8 +119,7 @@ class Directory extends SourcePluginBase {
    * {@inheritdoc}
    */
   public function fields() {
-    $fields = [];
-
+    $fields = ['path'];
     return $fields;
   }
 }
