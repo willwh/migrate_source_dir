@@ -53,13 +53,17 @@ class Directory extends SourcePluginBase {
   }
 
   /**
+   *
+   */
+
+  /**
    * Return a string representing the source file path.
    *
    * @return string
    *   The file path.
    */
   public function __toString() {
-    return $this->files_list;
+    return implode(",", $this->files_list);
   }
 
   /**
@@ -67,16 +71,27 @@ class Directory extends SourcePluginBase {
    */
   public function initializeIterator() {
     if (!$this->recurse) {
-      drush_log($this->configuration['path'], 'status');
       $it = new \DirectoryIterator($this->configuration['path']);
       foreach ($it as $fileinfo) {
         if (!$fileinfo->isDot() && !$fileinfo->isDir()) {
+          $path = $fileinfo->getPath();
+          $filename = $fileinfo->getFilename();
+          $pathname = $path . '/' . $filename;
+
           if (!empty($this->configuration['file_ext'])) {
             if ($fileinfo->getExtension() == $this->configuration['file_ext']) {
-              array_push($this->files_list, ['path' => $fileinfo->getPathname()]);
+              array_push($this->files_list, [
+                'path' => $path,
+                'filename' => $filename,
+                'pathname' => $pathname
+              ]);
             }
           } else {
-            array_push($this->files_list, ['path' => $fileinfo->getPathname()]);
+            array_push($this->files_list, [
+              'path' => $path,
+              'filename' => $filename,
+              'pathname' => $pathname
+            ]);
           }
         }
       }
@@ -92,7 +107,8 @@ class Directory extends SourcePluginBase {
         if (!is_dir($path)) {
           if (!empty($this->configuration['file_ext'])) {
             if ($path->getExtension() == $this->configuration['file_ext']) {
-              array_push($this->files_list, ['path' => $path]);
+              $file = fileinfo($path);
+              array_push($this->files_list, ['path' => $file->getPathname() , 'filename' => $file->getFilename()]);
             }
           } else {
             array_push($this->files_list, ['path' => $path]);
@@ -104,11 +120,16 @@ class Directory extends SourcePluginBase {
   }
 
   /**
-   * {@inheritdoc}
+   * We use the full path to the file as the ID.
+   *
    */
   public function getIDs() {
+    $ids = [];
     if (is_array($this->files_list)) {
-      return array_values($this->files_list);
+      foreach ($this->files_list as $delta => $value) {
+       array_push($ids, $value['pathname']);
+      }
+      return $ids;
     }
     else {
       throw new MigrateException('Unable to get a list of IDs for the Directory source');
@@ -119,7 +140,7 @@ class Directory extends SourcePluginBase {
    * {@inheritdoc}
    */
   public function fields() {
-    $fields = ['path'];
+    $fields = ['path', 'filename', 'pathname'];
     return $fields;
   }
 }
