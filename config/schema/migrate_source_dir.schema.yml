@@ -2,7 +2,7 @@ migrate.source.dir:
   type: migrate_source
   label: 'DIR'
   mapping:
-    dir:
+    path:
       type: string
       label: 'A directory path'
     file_ext:

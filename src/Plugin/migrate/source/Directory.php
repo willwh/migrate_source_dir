@@ -105,13 +105,24 @@ class Directory extends SourcePluginBase {
 
       foreach ($recursive_iter_iter as $path => $info) {
         if (!is_dir($path)) {
+          $file = fileinfo($path);
+          $path = $file->getPath();
+          $filename = $file->getFilename();
+          $pathname = $path . '/' . $filename;
           if (!empty($this->configuration['file_ext'])) {
             if ($path->getExtension() == $this->configuration['file_ext']) {
-              $file = fileinfo($path);
-              array_push($this->files_list, ['path' => $file->getPathname() , 'filename' => $file->getFilename()]);
+              array_push($this->files_list, [
+                'path' => $path,
+                'filename' => $filename,
+                'pathname' => $pathname
+              ]);
             }
           } else {
-            array_push($this->files_list, ['path' => $path]);
+            array_push($this->files_list, [
+              'path' => $path,
+              'filename' => $filename,
+              'pathname' => $pathname
+            ]);
           }
         }
       }
@@ -124,16 +135,8 @@ class Directory extends SourcePluginBase {
    *
    */
   public function getIDs() {
-    $ids = [];
-    if (is_array($this->files_list)) {
-      foreach ($this->files_list as $delta => $value) {
-       array_push($ids, $value['pathname']);
-      }
-      return $ids;
-    }
-    else {
-      throw new MigrateException('Unable to get a list of IDs for the Directory source');
-    }
+    $ids = ['pathname' => ['type' => 'string']];
+    return $ids;
   }
 
   /**
