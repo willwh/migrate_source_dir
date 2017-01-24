@@ -96,6 +96,8 @@ class Directory extends SourcePluginBase {
         }
       }
     } else {
+      // This needs a cleanup
+
       $recursive_iter = new \RecursiveDirectoryIterator($this->configuration['path'], \FilesystemIterator::SKIP_DOTS);
 
       // Pass the RecursiveIterator to the constructor of RecursiveIteratorIterator.
@@ -105,24 +107,14 @@ class Directory extends SourcePluginBase {
 
       foreach ($recursive_iter_iter as $path => $info) {
         if (!is_dir($path)) {
-          $file = fileinfo($path);
-          $path = $file->getPath();
-          $filename = $file->getFilename();
-          $pathname = $path . '/' . $filename;
+          $file = pathinfo($path);
           if (!empty($this->configuration['file_ext'])) {
-            if ($path->getExtension() == $this->configuration['file_ext']) {
-              array_push($this->files_list, [
-                'path' => $path,
-                'filename' => $filename,
-                'pathname' => $pathname
-              ]);
+            $ext = $file['extension'];
+            if ($ext == $this->configuration['file_ext']) {
+              array_push($this->files_list, ['path' => $file['dirname'], 'filename' => $file['basename'], 'pathname' => $path]);
             }
           } else {
-            array_push($this->files_list, [
-              'path' => $path,
-              'filename' => $filename,
-              'pathname' => $pathname
-            ]);
+            array_push($this->files_list, ['path' => $file['dirname'], 'filename' => $file['basename'], 'pathname' => $path]);
           }
         }
       }
