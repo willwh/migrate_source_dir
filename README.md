@@ -64,7 +64,7 @@ migration_dependencies:
   optional: {  }
 ```
 
-To reference these files in other migrations, use the source property pathname.
+To reference these files in other migrations, use the source property `pathname`.
 
 In the follow example, I am referencing my previous migration `directory_mp3`, and passing to a file field called `your_file_field`.
 
