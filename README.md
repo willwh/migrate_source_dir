@@ -1,31 +1,43 @@
 # migrate_source_dir
 
-Source definitions look something like this:
+A Migrate Source Plugin to import files from a directory path in to Drupal Files.
 
+Plugin Definition:
 ```
 source:
+  constants:
+    uri_file: 'public://' #required
   plugin: dir
-  path: /some/path/to/search
-  file_ext: mp3
+  track_changes: true
+  path: /path/to/files/for/import
+  file_ext: mp3  #optional
   recurse: true
 ```
 
-A full example of migrating mp3 files might look like so:
+This plugin provides the following fields:
+
+```
+path - Directory path to file
+pathname - Full path to file, used as the ID for incoming sources
+filename - The name of file
+```
+
+Use the plugin like so to import files in to Drupal:
 
 ```
 langcode: en
 status: true
 dependencies: {  }
-id: mp3_migration
-migration_tags: mp3
+id: directory_mp3
+migration_tags: directory
 migration_group: null
 label: 'mp3 id3 migration'
 source:
   constants:
-    uri_file: 'public://audio'
+    uri_file: 'public://'
   plugin: dir
   track_changes: true
-  path: /media/audio
+  path: /path/to/files/for/import
   file_ext: mp3
   recurse: true
 process:
@@ -50,4 +62,17 @@ destination:
 migration_dependencies:
   required: {  }
   optional: {  }
+```
+
+To reference these files in other migrations, use the source property pathname.
+
+In the follow example, I am referencing my previous migration `directory_mp3`, and passing to a file field called `your_file_field`.
+
+```
+Process:
+  your_file_field:
+    -
+      plugin: migration
+      migration: directory_mp3
+      source: pathname
 ```
