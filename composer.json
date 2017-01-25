@@ -4,11 +4,11 @@
   "description": "Migrate Source Plugin to import files",
   "keywords": ["Drupal"],
   "license": "GPL-2.0+",
-  "homepage": "https://github.com/willwh/migrate_source_dir",
+  "homepage": "https://www.drupal.org/sandbox/willwh/2846476",
   "minimum-stability": "dev",
   "support": {
-    "issues": "",
-    "source": ""
+    "issues": "https://www.drupal.org/project/issues/2846476",
+    "source": "https://www.drupal.org/sandbox/willwh/2846476"
   },
   "require": { }
 }
