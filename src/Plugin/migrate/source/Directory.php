@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\migrate_source_dir\Plugin\migrate\source;
+namespace Drupal\migrate_source_directory\Plugin\migrate\source;
 
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\Plugin\migrate\source\SourcePluginBase;
@@ -10,26 +10,40 @@ use Drupal\migrate\Plugin\MigrationInterface;
  * Source for a given directory path.
  *
  * @MigrateSource(
- *   id = "dir"
+ *   id = "directory"
  * )
  */
 class Directory extends SourcePluginBase {
 
   /**
-   * Recurse through a provided directory.
+   * Recurse level of directory search.
    *
-   * @var bool
+   * Uses http://php.net/manual/en/recursiveiteratoriterator.setmaxdepth.php.
+   *
+   * @var int
    */
-  protected $recurse = FALSE;
+  protected $recurseLevel = 0;
 
   /**
-   * A list of files from the provided directory, and possible children
+   * A list of files from the provided directory, and possible children.
    *
    * @var array
    */
-  protected $files_list = [];
+  protected $filesList = [];
 
+  /**
+   * An list of file extensions to limit by.
+   *
+   * @var array
+   */
+  protected $fileExtensions = [];
 
+  /**
+   * An list of directories to search.
+   *
+   * @var array
+   */
+  protected $urls = [];
 
   /**
    * {@inheritdoc}
@@ -38,23 +52,26 @@ class Directory extends SourcePluginBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
 
     // Path is required.
-    if (empty($this->configuration['path'])) {
-      throw new MigrateException('You must declare the "path" to search for files in your source settings.');
+    if (!empty($this->configuration['urls'])) {
+      foreach ($this->configuration['urls'] as $url) {
+        array_push($this->urls, $url);
+      }
     }
 
-    // Ensure the path is valid
-    if (!file_exists($this->configuration['path'])) {
-      throw new MigrateException('You must provide a valid system path to search for files.');
+    // Check for file extenions to limit by.
+    if (!empty($this->configuration['file_extensions'])) {
+      foreach ($this->configuration['file_extensions'] as $extension) {
+        array_push($this->fileExtensions, $extension);
+      }
     }
 
-    if ($this->configuration['recurse']) {
-      $this->recurse = TRUE;
+    if ((int) ($this->configuration['recurse_level']) === $this->configuration['recurse_level']) {
+      $this->recurseLevel = $this->configuration['recurse_level'];
+    }
+    else {
+      throw new MigrateException('You must declare the \'recurse_level\' as an integer');
     }
   }
-
-  /**
-   *
-   */
 
   /**
    * Return a string representing the source file path.
@@ -63,71 +80,53 @@ class Directory extends SourcePluginBase {
    *   The file path.
    */
   public function __toString() {
-    return implode(",", $this->files_list);
+    return implode(",", $this->urls);
   }
 
   /**
    * {@inheritdoc}
    */
   public function initializeIterator() {
-    if (!$this->recurse) {
-      $it = new \DirectoryIterator($this->configuration['path']);
-      foreach ($it as $fileinfo) {
-        if (!$fileinfo->isDot() && !$fileinfo->isDir()) {
-          $path = $fileinfo->getPath();
-          $filename = $fileinfo->getFilename();
-          $pathname = $path . '/' . $filename;
-
-          if (!empty($this->configuration['file_ext'])) {
-            if ($fileinfo->getExtension() == $this->configuration['file_ext']) {
-              array_push($this->files_list, [
-                'path' => $path,
-                'filename' => $filename,
-                'pathname' => $pathname
-              ]);
-            }
-          } else {
-            array_push($this->files_list, [
-              'path' => $path,
-              'filename' => $filename,
-              'pathname' => $pathname
-            ]);
-          }
-        }
-      }
-    } else {
-      // This needs a cleanup
-
-      $recursive_iter = new \RecursiveDirectoryIterator($this->configuration['path'], \FilesystemIterator::SKIP_DOTS);
+    foreach ($this->urls as $url) {
+      $recursive_iter = new \RecursiveDirectoryIterator($url, \FilesystemIterator::SKIP_DOTS);
 
       // Pass the RecursiveIterator to the constructor of RecursiveIteratorIterator.
       $recursive_iter_iter = new \RecursiveIteratorIterator(
         $recursive_iter, \RecursiveIteratorIterator::SELF_FIRST
       );
+      $recursive_iter_iter->setMaxDepth($this->recurseLevel);
 
       foreach ($recursive_iter_iter as $path => $info) {
         if (!is_dir($path)) {
           $file = pathinfo($path);
-          if (!empty($this->configuration['file_ext'])) {
+          if (!empty($this->fileExtensions)) {
             $ext = $file['extension'];
-            if ($ext == $this->configuration['file_ext']) {
-              array_push($this->files_list, ['path' => $file['dirname'], 'filename' => $file['basename'], 'pathname' => $path]);
+            if (in_array($ext, $this->fileExtensions)) {
+              array_push($this->filesList, [
+                'path' => $file['dirname'],
+                'filename' => $file['basename'],
+                'url' => $path
+              ]);
             }
-          } else {
-            array_push($this->files_list, ['path' => $file['dirname'], 'filename' => $file['basename'], 'pathname' => $path]);
+          }
+          else {
+            array_push($this->filesList, [
+              'path' => $file['dirname'],
+              'filename' => $file['basename'],
+              'url' => $path
+            ]);
           }
         }
       }
     }
-    return new \ArrayIterator($this->files_list);
+    return new \ArrayIterator($this->filesList);
   }
 
   /**
    * We use the full path to the file as the ID.
-   *
    */
-  public function getIDs() {
-    $ids = ['pathname' => ['type' => 'string']];
+  public function getIds() {
+    $ids = ['url' => ['type' => 'string']];
     return $ids;
   }
 
@@ -135,7 +134,12 @@ class Directory extends SourcePluginBase {
    * {@inheritdoc}
    */
   public function fields() {
-    $fields = ['path', 'filename', 'pathname'];
+    $fields = [
+      'path' => 'The folder path to the file',
+      'filename' => 'Filename and extension',
+      'url' => 'Full path to the file'
+];
     return $fields;
   }
+
 }

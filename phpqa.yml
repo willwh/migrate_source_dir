@@ -1,0 +1,40 @@
+application:
+  method:
+    git:
+      enabled: true
+      exception: false
+    composer:
+      enabled: true
+      exception: false
+  analyzer:
+    parallel-lint:
+      enabled: true
+      exception: true
+    php-cs-fixer:
+      enabled: false
+      exception: false
+    phpcbf:
+      enabled: true
+      exception: false
+      file:
+        standard: ../vendor/drupal/coder/coder_sniffer/Drupal/ruleset.xml
+    phpcs:
+      enabled: true
+      exception: false
+      file:
+        standard: ../vendor/drupal/coder/coder_sniffer/Drupal/ruleset.xml
+    phpmd:
+      enabled: false
+      exception: false
+    phploc:
+      enabled: false
+      exception: false
+    phpcpd:
+      enabled: false
+      exception: false
+    phpdcd:
+      enabled: false
+      exception: false
+    phpunit:
+      enabled: true
+      exception: true

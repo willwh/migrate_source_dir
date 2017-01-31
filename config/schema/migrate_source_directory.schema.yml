@@ -1,0 +1,13 @@
+migrate.source.dir:
+  type: migrate_source
+  label: 'Directory'
+  mapping:
+    urls:
+      type: array
+      label: 'A list of directory paths'
+    file_extensions:
+      type: array
+      label: 'A list of file type to search for'
+    recurse_level:
+      type: int
+      label: 'Recurse limit'

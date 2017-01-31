@@ -7,18 +7,22 @@ Plugin Definition:
 source:
   constants:
     uri_file: 'public://' #required
-  plugin: dir
+  plugin: directory
   track_changes: true
-  path: /path/to/files/for/import
-  file_ext: mp3  #optional
-  recurse: true
+  urls:
+    - /path/to/files/for/import
+  file_extensions:
+    - mp3
+    - m4a
+    - wav
+  recurse_level: -1
 ```
 
 This plugin provides the following fields:
 
 ```
 path - Directory path to file
-pathname - Full path to file, used as the ID for incoming sources
+url - Full path to file, used as the ID for incoming sources
 filename - The name of file
 ```
 
@@ -35,13 +39,17 @@ label: 'mp3 id3 migration'
 source:
   constants:
     uri_file: 'public://'
-  plugin: dir
+  plugin: directory
   track_changes: true
-  path: /path/to/files/for/import
-  file_ext: mp3
-  recurse: true
+  urls:
+    - /path/to/files/for/import
+  file_extensions:
+    - mp3
+    - m4a
+    - wav
+  recurse_level: -1
 process:
-  source_full_path: pathname
+  source_full_path: url
   uri_file:
     -
       plugin: concat
@@ -64,7 +72,7 @@ migration_dependencies:
   optional: {  }
 ```
 
-To reference these files in other migrations, use the source property `pathname`.
+To reference these files in other migrations, use the source property `url`.
 
 In the follow example, I am referencing my previous migration `directory_mp3`, and passing to a file field called `your_file_field`.
 
@@ -74,5 +82,5 @@ Process:
     -
       plugin: migration
       migration: directory_mp3
-      source: pathname
+      source: url
 ```
